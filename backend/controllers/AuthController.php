@@ -133,6 +133,11 @@ class AuthController {
         $stmt = $this->conn->prepare($sessionQuery);
         $stmt->bind_param("issss", $user_id, $token, $ip, $userAgent, $expires);
         $stmt->execute();
+
+        // Update user's last_active timestamp
+        $updateActivity = $this->conn->prepare("UPDATE users SET last_active = NOW() WHERE id = ?");
+        $updateActivity->bind_param("i", $user_id);
+        $updateActivity->execute();
         
         return [
             'success' => true,
@@ -257,6 +262,12 @@ class AuthController {
         if (!$stmt->execute()) {
             throw new Exception("Failed to create session");
         }
+
+        // Update user's last_active timestamp
+        $updateActivity = $this->conn->prepare("UPDATE users SET last_active = NOW() WHERE id = ?");
+        $userId = $user['id'];
+        $updateActivity->bind_param("i", $userId);
+        $updateActivity->execute();
         
         // Remove sensitive data
         unset($user['password']);

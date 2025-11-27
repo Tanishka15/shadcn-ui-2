@@ -48,6 +48,11 @@ class MoodController {
                     'mood_label' => $mood_label
                 ]
             );
+
+            // Update user's last_active timestamp
+            $updateActivity = $this->conn->prepare("UPDATE users SET last_active = NOW() WHERE id = ?");
+            $updateActivity->bind_param("i", $user_id);
+            $updateActivity->execute();
             
             return [
                 'success' => true,

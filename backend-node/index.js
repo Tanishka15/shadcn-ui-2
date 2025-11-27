@@ -55,7 +55,7 @@ async function makePhoneCall(to, message) {
   try {
     // Create TwiML for voice message
     const twimlUrl = `http://twimlets.com/message?Message=${encodeURIComponent(message)}`;
-    
+
     const call = await twilioClient.calls.create({
       url: twimlUrl,
       to: to,
@@ -89,10 +89,10 @@ app.post('/api/emergency/call-and-sms', async (req, res) => {
     }
 
     const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
-    
+
     // SMS message
     const smsMessage = `🚨 EMERGENCY ALERT!\n\nEmergency SOS activated.\n\nLocation: ${googleMapsLink}\n\nTime: ${new Date().toLocaleString()}\n\n- SafeSpace Emergency System`;
-    
+
     // Voice message for call
     const voiceMessage = `Emergency SOS alert activated. Please respond immediately. The caller's location has been sent via SMS.`;
 
@@ -163,7 +163,7 @@ app.post('/api/emergency/notify-contacts', async (req, res) => {
     const successCount = smsResults.filter(r => r.success).length;
 
     let callResult = null;
-    
+
     // Optionally call the first contact
     if (makeCall && phoneNumbers.length > 0) {
       const voiceMessage = `Emergency SOS alert! Your trusted contact needs immediate help. Their location has been sent via text message. Please respond immediately.`;
@@ -313,10 +313,10 @@ app.post('/api/chatbot', async (req, res) => {
 
     // Detect mood - check upset/frustrated first before happy
     let detectedMood = 'neutral';
-    
+
     // Priority order: upset, frustrated, confused, happy, neutral
     const moodPriority = ['upset', 'frustrated', 'confused', 'happy', 'neutral'];
-    
+
     for (const mood of moodPriority) {
       const keywords = moodKeywords[mood];
       if (keywords && keywords.some(keyword => userMessage.includes(keyword))) {
@@ -364,7 +364,7 @@ app.post('/api/chatbot', async (req, res) => {
       ];
     }
     // Mood/Mental Health - Most important, check first
-    if (detectedMood === 'upset' || userMessage.includes('not feeling') || userMessage.includes('feeling bad') || userMessage.includes('mental health') || userMessage.includes('depressed') || userMessage.includes('anxious')) {
+    else if (detectedMood === 'upset' || userMessage.includes('not feeling') || userMessage.includes('feeling bad') || userMessage.includes('mental health') || userMessage.includes('depressed') || userMessage.includes('anxious')) {
       intent = 'wellness';
       reply = 'I\'m really sorry you\'re going through this. � Your feelings are valid, and it\'s brave of you to reach out. SafeSpace has several resources that might help you feel better. Would you like to explore some options?';
       suggestions = [
@@ -575,8 +575,8 @@ app.post('/api/chatbot', async (req, res) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     message: 'SafeSpace Backend is running',
     twilioConfigured: !!twilioClient,
     timestamp: new Date().toISOString(),

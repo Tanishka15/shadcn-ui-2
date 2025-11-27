@@ -160,15 +160,30 @@ export default function SafetyHub() {
         return;
       }
 
-      // Get location
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 5000,
-        });
-      });
+      // Get location (with fallback)
+      let latitude = 0;
+      let longitude = 0;
+      let locationError = null;
 
-      const { latitude, longitude } = position.coords;
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true, // Try high accuracy
+            timeout: 15000,           // Wait up to 15s (increased from 5s)
+            maximumAge: 30000,        // Accept cached position up to 30s old
+          });
+        });
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
+      } catch (err: any) {
+        console.warn('Could not get precise location for SOS:', err);
+        locationError = err;
+        // Fallback: Proceed with 0,0 or maybe try low accuracy? 
+        // For now, we proceed so the CALL still goes through.
+        toast.warning('Location Unavailable', {
+          description: 'Sending SOS without precise location...',
+        });
+      }
 
       toast.info('Emergency Alert Activated', {
         description: 'Notifying your trusted contacts...',
@@ -179,7 +194,7 @@ export default function SafetyHub() {
         console.log('Triggering SOS with location:', { latitude, longitude });
         const sosResponse = await sosService.triggerSOS(latitude, longitude);
         console.log('SOS response:', sosResponse);
-        
+
         if (sosResponse.success) {
           console.log('✅ SOS alert saved to database:', sosResponse);
           toast.success('SOS Alert Saved', {
@@ -211,7 +226,7 @@ export default function SafetyHub() {
 
         if (data.success) {
           toast.success('Emergency Alert Sent!', {
-            description: `${phoneNumbers.length} trusted contact(s) notified with your location`,
+            description: `${phoneNumbers.length} trusted contact(s) notified${locationError ? ' (Location missing)' : ''}`,
             duration: 5000,
           });
         } else {
@@ -222,18 +237,17 @@ export default function SafetyHub() {
         toast.error('Notification Failed', {
           description: 'Could not send alerts. Opening phone dialer as fallback...',
         });
-        
+
         // Fallback: Call first trusted contact directly
         setTimeout(() => {
           window.location.href = `tel:${phoneNumbers[0]}`;
         }, 1000);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('SOS error:', error);
-      
       toast.error('SOS Failed', {
-        description: 'Could not get location or send alerts',
+        description: 'Unexpected error occurred.',
       });
     } finally {
       setIsCallingEmergency(false);
@@ -269,7 +283,7 @@ export default function SafetyHub() {
         // Send initial SMS to trusted contacts
         navigator.geolocation.getCurrentPosition(async (pos) => {
           const { latitude, longitude } = pos.coords;
-          
+
           try {
             const response = await fetch('http://localhost:5001/api/location/share/start', {
               method: 'POST',
@@ -282,7 +296,7 @@ export default function SafetyHub() {
             });
 
             const data = await response.json();
-            
+
             if (data.success) {
               toast.success('Location Sharing Started', {
                 description: `SMS sent to ${phoneNumbers.length} trusted contacts`,
@@ -325,7 +339,7 @@ export default function SafetyHub() {
           (error) => console.error(error),
           { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
         );
-        
+
         watchIdRef.current = watchId;
         setLocationSharing(true);
       } else {
@@ -339,7 +353,7 @@ export default function SafetyHub() {
         navigator.geolocation.clearWatch(watchIdRef.current);
         watchIdRef.current = null;
       }
-      
+
       // Extract phone numbers for stop notification
       const phoneNumbers = trustedContacts
         .map(contact => contact.contact_phone)
@@ -353,10 +367,10 @@ export default function SafetyHub() {
           phoneNumbers: phoneNumbers,
         }),
       }).catch(err => console.error('Error stopping share:', err));
-      
+
       locationUpdateCount.current = 0;
       setLocationSharing(false);
-      
+
       toast.success('Location Sharing Stopped', {
         description: 'Your contacts have been notified',
       });
@@ -465,11 +479,10 @@ export default function SafetyHub() {
             onClick={handleSOS}
             disabled={isCallingEmergency}
             size="lg"
-            className={`w-64 h-64 rounded-full text-2xl font-bold transition-all duration-300 ${
-              sosActive
-                ? 'bg-red-700 animate-pulse scale-110'
-                : 'bg-red-600 hover:bg-red-700 hover:scale-105'
-            } ${isCallingEmergency ? 'opacity-75' : ''}`}
+            className={`w-64 h-64 rounded-full text-2xl font-bold transition-all duration-300 ${sosActive
+              ? 'bg-red-700 animate-pulse scale-110'
+              : 'bg-red-600 hover:bg-red-700 hover:scale-105'
+              } ${isCallingEmergency ? 'opacity-75' : ''}`}
           >
             {isCallingEmergency ? (
               <div className="text-center">
@@ -491,7 +504,7 @@ export default function SafetyHub() {
               </div>
             )}
           </Button>
-          
+
           {sosActive && (
             <div className="mt-4 p-4 bg-red-100 border border-red-300 rounded-lg">
               <p className="text-red-800 font-semibold">
@@ -535,7 +548,7 @@ export default function SafetyHub() {
               >
                 {locationSharing ? 'Stop Sharing Location' : 'Start Sharing Location'}
               </Button>
-              
+
               {locationSharing && (
                 <div className="text-sm text-green-600 bg-green-50 p-3 rounded">
                   <p className="font-semibold">📍 Location sharing active</p>
@@ -544,7 +557,7 @@ export default function SafetyHub() {
                   <p className="text-xs">• +916238808291</p>
                 </div>
               )}
-              
+
               {!locationSharing && (
                 <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded">
                   <p className="font-semibold mb-1">How it works:</p>
