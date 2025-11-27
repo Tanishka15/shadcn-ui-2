@@ -61,7 +61,7 @@ export const apiCall = async (
     if (!response.ok) {
       if (response.status === 401) {
         clearAuthToken();
-        window.location.href = '/';
+        // Do not redirect; let the caller handle unauthorized error
       }
       const error = await response.json();
       throw new Error(error.message || 'API request failed');

@@ -1,15 +1,14 @@
 <?php
-// Prevent any output before JSON
 error_reporting(E_ERROR | E_PARSE);
 ini_set('display_errors', '0');
-ob_start();
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../controllers/MoodController.php';
 
+header('Content-Type: application/json');
+
 $method = $_SERVER['REQUEST_METHOD'];
 $controller = new MoodController($conn);
-
 $action = $_GET['action'] ?? 'logs';
 
 switch ($method) {
@@ -29,7 +28,6 @@ switch ($method) {
                 ];
         }
         break;
-    
     case 'POST':
         switch ($action) {
             case 'save':
@@ -43,7 +41,6 @@ switch ($method) {
                 ];
         }
         break;
-    
     default:
         http_response_code(405);
         $response = [
@@ -52,7 +49,5 @@ switch ($method) {
         ];
 }
 
-ob_end_clean(); // Clear any output
-header('Content-Type: application/json');
 echo json_encode($response);
 ?>
