@@ -6,7 +6,7 @@ import './index.css';
 // Google OAuth Client ID from environment variable
 // Get your own Client ID from: https://console.cloud.google.com/
 // See SETUP_GOOGLE_OAUTH.md for complete setup instructions
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '960395120025-p9hh0og4eljr9839d9el7e9auqbubrg0.apps.googleusercontent.com';
 
 if (!GOOGLE_CLIENT_ID) {
   console.warn('⚠️ Google OAuth is not configured. Set VITE_GOOGLE_CLIENT_ID in .env file.');
