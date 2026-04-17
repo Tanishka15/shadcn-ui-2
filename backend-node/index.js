@@ -72,11 +72,10 @@ async function makePhoneCall(to, message) {
 // ========== EMERGENCY SOS - AUTOMATED CALL & SMS ==========
 app.post('/api/emergency/call-and-sms', async (req, res) => {
   try {
-    const { latitude, longitude, emergencyNumber, timestamp } = req.body;
+    const { emergencyNumber, timestamp } = req.body;
 
     console.log('🚨 EMERGENCY SOS ACTIVATED:', {
       emergencyNumber: emergencyNumber,
-      location: { latitude, longitude },
       timestamp: timestamp || new Date().toLocaleString(),
     });
 
@@ -88,10 +87,8 @@ app.post('/api/emergency/call-and-sms', async (req, res) => {
       });
     }
 
-    const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
-
     // SMS message
-    const smsMessage = `🚨 EMERGENCY ALERT!\n\nEmergency SOS activated.\n\nLocation: ${googleMapsLink}\n\nTime: ${new Date().toLocaleString()}\n\n- SafeSpace Emergency System`;
+    const smsMessage = `🚨 EMERGENCY ALERT!\n\nEmergency SOS activated.\n\nTime: ${new Date().toLocaleString()}\n\n- SafeSpace Emergency System`;
 
     // Voice message for call
     const voiceMessage = `Emergency SOS alert activated. Please respond immediately. The caller's location has been sent via SMS.`;
@@ -109,9 +106,7 @@ app.post('/api/emergency/call-and-sms', async (req, res) => {
         success: true,
         message: 'Emergency alert sent successfully',
         call: callResult,
-        sms: smsResult,
-        location: { latitude, longitude },
-        mapsLink: googleMapsLink
+        sms: smsResult
       });
     } else {
       res.status(500).json({
@@ -135,11 +130,10 @@ app.post('/api/emergency/call-and-sms', async (req, res) => {
 // ========== NOTIFY TRUSTED CONTACTS DURING SOS ==========
 app.post('/api/emergency/notify-contacts', async (req, res) => {
   try {
-    const { latitude, longitude, phoneNumbers, message, makeCall } = req.body;
+    const { phoneNumbers, message, makeCall } = req.body;
 
     console.log('🚨 NOTIFYING TRUSTED CONTACTS:', {
       contacts: phoneNumbers,
-      location: { latitude, longitude },
       makeCall: makeCall || false,
       timestamp: new Date().toLocaleString()
     });
@@ -153,8 +147,7 @@ app.post('/api/emergency/notify-contacts', async (req, res) => {
       });
     }
 
-    const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
-    const smsMessage = message || `🚨 EMERGENCY SOS ALERT!\n\nYour trusted contact needs immediate help!\n\nLocation: ${googleMapsLink}\n\nTime: ${new Date().toLocaleString()}\n\nPlease respond immediately!\n\n- SafeSpace Emergency System`;
+    const smsMessage = message || `🚨 EMERGENCY SOS ALERT!\n\nYour trusted contact needs immediate help!\n\nTime: ${new Date().toLocaleString()}\n\nPlease respond immediately!\n\n- SafeSpace Emergency System`;
 
     // Send SMS to all trusted contacts
     const smsPromises = phoneNumbers.map(phone => sendSMS(phone, smsMessage));
@@ -175,9 +168,7 @@ app.post('/api/emergency/notify-contacts', async (req, res) => {
       success: true,
       message: `${successCount}/${phoneNumbers.length} trusted contacts notified${callResult ? ' and call initiated' : ''}`,
       smsResults,
-      callResult,
-      location: { latitude, longitude },
-      mapsLink: googleMapsLink
+      callResult
     });
 
   } catch (error) {
@@ -190,109 +181,7 @@ app.post('/api/emergency/notify-contacts', async (req, res) => {
   }
 });
 
-// ========== LOCATION SHARING START (SMS to Trusted Contacts) ==========
-app.post('/api/location/share/start', async (req, res) => {
-  try {
-    const { latitude, longitude, phoneNumbers } = req.body;
 
-    console.log('📍 LOCATION SHARING STARTED:', {
-      location: { latitude, longitude },
-      trustedContacts: phoneNumbers,
-      timestamp: new Date().toLocaleString()
-    });
-
-    const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
-    const smsMessage = `📍 Location Sharing Started\n\nYour trusted contact has started sharing their live location with you.\n\nCurrent Location: ${googleMapsLink}\n\nYou will receive updates as they move.\n\n- SafeSpace App`;
-
-    // Send SMS to all trusted contacts
-    const smsPromises = phoneNumbers.map(phone => sendSMS(phone, smsMessage));
-    const smsResults = await Promise.all(smsPromises);
-
-    const successCount = smsResults.filter(r => r.success).length;
-
-    res.json({
-      success: true,
-      message: `Location sharing started! ${successCount}/${phoneNumbers.length} contacts notified`,
-      smsResults,
-      sessionId: `SESSION_${Date.now()}`,
-    });
-
-  } catch (error) {
-    console.error('❌ Location share start error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to start location sharing',
-      error: error.message
-    });
-  }
-});
-
-// ========== LOCATION UPDATE (SMS to Trusted Contacts) ==========
-app.post('/api/location/update', async (req, res) => {
-  try {
-    const { latitude, longitude, phoneNumbers } = req.body;
-
-    console.log('📍 LOCATION UPDATE:', {
-      location: { latitude, longitude },
-      timestamp: new Date().toLocaleString()
-    });
-
-    const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
-    const smsMessage = `📍 Location Update\n\nUpdated Location: ${googleMapsLink}\n\nTime: ${new Date().toLocaleTimeString()}\n\n- SafeSpace App`;
-
-    // Send SMS to all trusted contacts
-    const smsPromises = phoneNumbers.map(phone => sendSMS(phone, smsMessage));
-    const smsResults = await Promise.all(smsPromises);
-
-    res.json({
-      success: true,
-      message: 'Location updated',
-      smsResults,
-    });
-
-  } catch (error) {
-    console.error('❌ Location update error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update location',
-      error: error.message
-    });
-  }
-});
-
-// ========== LOCATION SHARING STOP (SMS to Trusted Contacts) ==========
-app.post('/api/location/share/stop', async (req, res) => {
-  try {
-    const { phoneNumbers } = req.body;
-
-    console.log('📍 LOCATION SHARING STOPPED:', {
-      trustedContacts: phoneNumbers,
-      timestamp: new Date().toLocaleString()
-    });
-
-    const smsMessage = `📍 Location Sharing Stopped\n\nYour trusted contact has stopped sharing their location.\n\nStay safe!\n\n- SafeSpace App`;
-
-    // Send SMS to all trusted contacts
-    const smsPromises = phoneNumbers.map(phone => sendSMS(phone, smsMessage));
-    const smsResults = await Promise.all(smsPromises);
-
-    const successCount = smsResults.filter(r => r.success).length;
-
-    res.json({
-      success: true,
-      message: `Location sharing stopped! ${successCount}/${phoneNumbers.length} contacts notified`,
-      smsResults,
-    });
-
-  } catch (error) {
-    console.error('❌ Location share stop error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to stop location sharing',
-      error: error.message
-    });
-  }
-});
 
 // ========== CHATBOT ASSISTANT ==========
 app.post('/api/chatbot', async (req, res) => {
@@ -334,11 +223,10 @@ app.post('/api/chatbot', async (req, res) => {
     // Emergency keywords - HIGHEST PRIORITY
     if (userMessage.includes('emergency') || userMessage.includes('sos') || userMessage.includes('danger') || userMessage.includes('help me') || userMessage.includes('unsafe') || userMessage.includes('threat')) {
       intent = 'emergency';
-      reply = '🚨 I understand this is urgent. Your safety is the top priority. You can trigger an Emergency SOS right now that will immediately alert your trusted contacts with your location. They\'ll receive both a phone call and SMS. Do you need immediate help?';
+      reply = '🚨 I understand this is urgent. Your safety is the top priority. You can trigger an Emergency alert right now that will immediately contact your trusted contacts. They\'ll receive both a phone call and SMS. Do you need immediate help?';
       suggestions = [
-        'Trigger Emergency SOS now',
+        'Trigger Emergency alert now',
         'Call emergency services (112)',
-        'Share your live location with contacts',
         'View emergency contact numbers'
       ];
       quickActions = [
@@ -381,23 +269,11 @@ app.post('/api/chatbot', async (req, res) => {
         { label: 'Emergency Support', action: '/security' }
       ];
     }
-    // Location/Navigation help
-    else if (userMessage.includes('location') || userMessage.includes('share') || userMessage.includes('tracking')) {
-      intent = 'location';
-      reply = '📍 SafeSpace has live location sharing! You can share your real-time location with trusted contacts via SMS. This is great when walking alone at night or in unfamiliar areas.';
-      suggestions = [
-        'Start location sharing in Safety Hub',
-        'Your contacts will receive SMS updates with your location',
-        'You can stop sharing anytime'
-      ];
-      quickActions = [
-        { label: 'Start Location Sharing', action: '/safety' }
-      ];
-    }
+
     // Profile/Trusted Contacts
     else if (userMessage.includes('profile') || userMessage.includes('trusted contact') || userMessage.includes('add contact') || userMessage.includes('manage contact')) {
       intent = 'profile';
-      reply = '👤 Your Profile is where you manage your account and trusted contacts. Trusted contacts are the people who will receive your emergency alerts and location updates.';
+      reply = '👤 Your Profile is where you manage your account and trusted contacts. Trusted contacts are the people who will receive your emergency alerts.';
       suggestions = [
         'Add trusted contacts with phone numbers',
         'View and manage your emergency contacts',
@@ -455,10 +331,9 @@ app.post('/api/chatbot', async (req, res) => {
     // Safety Hub specific
     else if (userMessage.includes('safety hub') || userMessage.includes('safety feature') || userMessage.includes('protection')) {
       intent = 'safety';
-      reply = '🚨 The Safety Hub is your one-stop for all safety features including Emergency SOS, Live Location Sharing, and quick access to emergency services.';
+      reply = '🚨 The Safety Hub is your one-stop for all safety features including Emergency alerts and quick access to emergency services.';
       suggestions = [
-        'Trigger Emergency SOS (calls & SMS your contacts)',
-        'Share your live location with trusted contacts',
+        'Trigger Emergency alert (calls & SMS your contacts)',
         'Quick access to emergency numbers',
         'Set up trusted contacts for emergencies'
       ];
@@ -472,7 +347,7 @@ app.post('/api/chatbot', async (req, res) => {
       intent = 'navigation';
       reply = '👋 Let me show you around SafeSpace! Here are all the features available to keep you safe and supported:';
       suggestions = [
-        '🚨 Safety Hub - Emergency SOS & location sharing',
+        '🚨 Safety Hub - Emergency alerts',
         '💚 Wellness Hub - Mood tracking & mental health',
         '📚 Resources - Book counseling sessions',
         '📖 Self-Help Guides - Educational articles & tips',
@@ -537,7 +412,7 @@ app.post('/api/chatbot', async (req, res) => {
     // Default fallback
     else {
       intent = 'general';
-      reply = 'I\'m here to support you! 💙 SafeSpace has many features to keep you safe and help you feel better. I can help you with:\n\n🚨 Emergency alerts & safety\n💚 Mental health & wellness\n📞 Counseling & professional help\n📍 Location sharing\n📚 Self-help resources\n\nWhat would you like to explore?';
+      reply = 'I\'m here to support you! 💙 SafeSpace has many features to keep you safe and help you feel better. I can help you with:\n\n🚨 Emergency alerts & safety\n💚 Mental health & wellness\n📞 Counseling & professional help\n📚 Self-help resources\n\nWhat would you like to explore?';
       suggestions = [
         'I\'m not feeling well',
         'Show me safety features',
@@ -582,7 +457,6 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     features: {
       emergencyCallAndSMS: twilioClient ? 'enabled' : 'disabled (needs Twilio)',
-      locationSharing: twilioClient ? 'enabled' : 'disabled (needs Twilio)',
     }
   });
 });
@@ -592,13 +466,10 @@ app.get('/', (req, res) => {
   res.json({
     message: 'SafeSpace Emergency API',
     version: '3.0.0',
-    description: 'Emergency SOS makes automated call and sends SMS to emergency services. Location sharing sends SMS to trusted contacts.',
+    description: 'Emergency features make automated call and sends SMS to emergency services.',
     endpoints: {
       emergencyCallAndSMS: 'POST /api/emergency/call-and-sms - Automated call & SMS to emergency number',
-      notifyTrustedContacts: 'POST /api/emergency/notify-contacts - Notify trusted contacts during SOS',
-      locationShareStart: 'POST /api/location/share/start - Start sharing location via SMS',
-      locationUpdate: 'POST /api/location/update - Update location via SMS',
-      locationShareStop: 'POST /api/location/share/stop - Stop sharing location',
+      notifyTrustedContacts: 'POST /api/emergency/notify-contacts - Notify trusted contacts',
       health: 'GET /api/health - Check server status'
     },
     twilioStatus: twilioClient ? '✅ Configured' : '⚠️ Not Configured'
@@ -612,11 +483,9 @@ app.listen(PORT, () => {
   console.log(`✅ SafeSpace Backend Server Running`);
   console.log(`📡 Server: http://localhost:${PORT}`);
   console.log(`🚨 Emergency Call & SMS: http://localhost:${PORT}/api/emergency/call-and-sms`);
-  console.log(`📍 Location API: http://localhost:${PORT}/api/location/share/start`);
   console.log(`💬 Twilio Status: ${twilioClient ? '✅ Enabled' : '⚠️ Disabled (add credentials to .env)'}`);
   console.log('');
   console.log('📋 FEATURE OVERVIEW:');
-  console.log('   🚨 Emergency SOS → Automated call + SMS to 124');
-  console.log('   📍 Location Sharing → SMS to trusted contacts');
+  console.log('   🚨 Emergency Alerts → Automated call + SMS to 124');
   console.log('═══════════════════════════════════════════════════');
 });

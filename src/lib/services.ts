@@ -78,44 +78,30 @@ export const userService = {
   },
 };
 
-// Mood Service
-export const moodService = {
-  saveMoodLog: async (moodLevel: number, moodEmoji: string, moodLabel: string, notes?: string) => {
-    return apiCall('mood.php?action=save', {
+// Feedback Service
+export const feedbackService = {
+  submit: async (data: { type: string; title: string; description: string; is_anonymous: boolean }) => {
+    return apiCall('feedback.php?action=submit', {
       method: 'POST',
-      body: { mood_level: moodLevel, mood_emoji: moodEmoji, mood_label: moodLabel, notes },
+      body: data,
     });
   },
 
-  getMoodLogs: async (days: number = 7) => {
-    return apiCall(`mood.php?action=logs&days=${days}`, { method: 'GET' });
-  },
-
-  getMoodStats: async () => {
-    return apiCall('mood.php?action=stats', { method: 'GET' });
+  getMyReports: async () => {
+    return apiCall('feedback.php?action=my_reports', { method: 'GET' });
   },
 };
 
-// SOS Service
-export const sosService = {
-  triggerSOS: async (latitude?: number, longitude?: number) => {
-    return apiCall('sos.php?action=trigger', {
-      method: 'POST',
-      body: { latitude, longitude },
+// Announcement Service
+export const announcementService = {
+  getAll: async () => {
+    return apiCall('announcements.php', {
+      method: 'GET',
+      requiresAuth: false,
     });
-  },
-
-  resolveSOS: async (sosId: number) => {
-    return apiCall('sos.php?action=resolve', {
-      method: 'POST',
-      body: { sos_id: sosId },
-    });
-  },
-
-  getSOSHistory: async () => {
-    return apiCall('sos.php?action=history', { method: 'GET' });
   },
 };
+
 
 // Admin Service
 export const adminService = {
@@ -152,36 +138,12 @@ export const adminService = {
     });
   },
 
-  // Get user's activity timeline
+  // Dashboard activity timeline for a user
   getUserActivity: async (userId: number, limit: number = 50) => {
     const token = adminService.getAdminToken();
     if (!token) throw new Error('Admin token not set');
 
     return apiCall(`admin.php?action=user-activity&user_id=${userId}&limit=${limit}`, {
-      method: 'GET',
-      customHeaders: { 'Authorization': `Bearer ${token}` },
-      requiresAuth: false,
-    });
-  },
-
-  // Get mood analytics (last 30 days)
-  getMoodAnalytics: async () => {
-    const token = adminService.getAdminToken();
-    if (!token) throw new Error('Admin token not set');
-
-    return apiCall('admin.php?action=mood-analytics', {
-      method: 'GET',
-      customHeaders: { 'Authorization': `Bearer ${token}` },
-      requiresAuth: false,
-    });
-  },
-
-  // Get SOS analytics
-  getSOSAnalytics: async () => {
-    const token = adminService.getAdminToken();
-    if (!token) throw new Error('Admin token not set');
-
-    return apiCall('admin.php?action=sos-analytics', {
       method: 'GET',
       customHeaders: { 'Authorization': `Bearer ${token}` },
       requiresAuth: false,
@@ -199,4 +161,95 @@ export const adminService = {
       requiresAuth: false,
     });
   },
+};
+
+// Doctor Service
+export const doctorService = {
+  getSchedule: async () => {
+    return apiCall('doctors.php?action=get-schedule', {
+      method: 'GET',
+      requiresAuth: false,
+    });
+  },
+
+  updateStatus: async (id: number, status: 'Available' | 'Busy' | 'Offline') => {
+    return apiCall('doctors.php?action=update-status', {
+      method: 'POST',
+      body: { id, status },
+      requiresAuth: false,
+    });
+  },
+};
+
+// Waiting List Service
+export const waitingListService = {
+  join: async (doctorId: number, purposeCategory: string, purposeDetail: string, priorityLevel: number, customReason?: string) => {
+    return apiCall('waiting_list.php?action=join', {
+      method: 'POST',
+      body: { 
+        doctor_id: doctorId, 
+        purpose_category: purposeCategory, 
+        purpose_detail: purposeDetail, 
+        priority_level: priorityLevel,
+        custom_reason: customReason
+      },
+    });
+  },
+
+  getStatus: async () => {
+    return apiCall('waiting_list.php?action=status', {
+      method: 'GET',
+    });
+  },
+
+  async getAllAdmin() {
+    return apiCall('waiting_list.php?action=admin_all', {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  }
+};
+
+// Appointment Service
+export const appointmentService = {
+  async create(data: any) {
+    // Assuming API_BASE is handled by apiCall and authentication by requiresAuth
+    return apiCall('appointments.php?action=create', {
+      method: 'POST',
+      body: data,
+      requiresAuth: true,
+    });
+  },
+
+  async getMyAppointments() {
+    return apiCall('appointments.php?action=my', {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+
+  async getAllAdmin() {
+    return apiCall('appointments.php?action=admin_all', {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+
+  async updateStatus(id: number, status: string) {
+    return apiCall('appointments.php?action=update_status', {
+      method: 'PUT',
+      body: { id, status },
+      requiresAuth: true,
+    });
+  }
+};
+
+export const queueService = {
+  async getStatus(doctorId?: number) {
+    const url = doctorId
+      ? `queue.php?action=status&doctor_id=${doctorId}`
+      : `queue.php?action=status`;
+    // Assuming apiCall handles API_BASE and other common headers
+    return apiCall(url, { method: 'GET' });
+  }
 };

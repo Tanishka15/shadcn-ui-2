@@ -1,63 +1,54 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Phone, MapPin, ArrowLeft, Building } from 'lucide-react';
+import { Shield, Phone, ArrowLeft, Building } from 'lucide-react';
 
 export default function SecurityDirectory() {
   const securityContacts = [
     {
       building: 'CS Block',
       guardName: 'Rajesh Kumar',
-      phone: '+91-9876543210',
-      location: 'Computer Science Building, Ground Floor'
+      phone: '+91-9876543210'
     },
     {
       building: 'EE Block',
       guardName: 'Suresh Sharma',
-      phone: '+91-9876543211',
-      location: 'Electrical Engineering Building, Main Entrance'
+      phone: '+91-9876543211'
     },
     {
       building: 'Mechanical Block',
       guardName: 'Amit Singh',
-      phone: '+91-9876543212',
-      location: 'Mechanical Engineering Building, Security Desk'
+      phone: '+91-9876543212'
     },
     {
       building: 'Chemical Block',
       guardName: 'Vikram Patel',
-      phone: '+91-9876543213',
-      location: 'Chemical Engineering Building, Front Gate'
+      phone: '+91-9876543213'
     },
     {
       building: 'SAB (Student Activity Building)',
       guardName: 'Raman Gupta',
-      phone: '+91-9876543214',
-      location: 'Student Activity Building, Reception'
+      phone: '+91-9876543214'
     },
     {
       building: 'LHC (Lecture Hall Complex)',
       guardName: 'Deepak Verma',
-      phone: '+91-9876543215',
-      location: 'Lecture Hall Complex, Main Entrance'
+      phone: '+91-9876543215'
     },
     {
       building: 'Brahmaputra Hostel',
       guardName: 'Mohan Das',
-      phone: '+91-9876543216',
-      location: 'Brahmaputra Hostel, Warden Office'
+      phone: '+91-9876543216'
     },
     {
       building: 'Raavi Hostel',
       guardName: 'Kiran Joshi',
-      phone: '+91-9876543217',
-      location: 'Raavi Hostel, Ground Floor Security'
+      phone: '+91-9876543217'
     },
     {
       building: 'Beas Hostel',
       guardName: 'Sandeep Yadav',
-      phone: '+91-9876543218',
-      location: 'Beas Hostel, Main Gate'
+      phone: '+91-9876543218'
     }
   ];
 
@@ -106,11 +97,7 @@ export default function SecurityDirectory() {
                 <Phone className="h-4 w-4 mr-2" />
                 Campus Security Control
               </Button>
-              <Link to="/safety">
-                <Button variant="outline" className="w-full border-red-300 text-red-700 hover:bg-red-100">
-                  🚨 Emergency SOS
-                </Button>
-              </Link>
+
             </div>
           </CardContent>
         </Card>
@@ -124,10 +111,7 @@ export default function SecurityDirectory() {
                   <Building className="h-6 w-6 text-blue-600" />
                   <span>{contact.building}</span>
                 </CardTitle>
-                <CardDescription className="flex items-center space-x-1">
-                  <MapPin className="h-4 w-4 text-gray-500" />
-                  <span>{contact.location}</span>
-                </CardDescription>
+
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">

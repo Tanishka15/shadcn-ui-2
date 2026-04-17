@@ -11,8 +11,14 @@ import Resources from './pages/Resources';
 import SecurityDirectory from './pages/SecurityDirectory';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
+import MedicalWaitlist from "./pages/MedicalWaitlist";
+import BookAppointment from "./pages/BookAppointment";
+import MyAppointments from "./pages/MyAppointments";
+import AdminAppointments from "./pages/AdminAppointments";
+import QueueDashboard from "./pages/QueueDashboard";
 import SelfHelpGuides from './pages/self_help_guides';
 import NotFound from './pages/NotFound';
+import FeedbackReport from './pages/FeedbackReport';
 import ChatbotAssistant from './components/ChatbotAssistant';
 
 const queryClient = new QueryClient();
@@ -33,6 +39,12 @@ const App = () => (
           <Route path="/security" element={<SecurityDirectory />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/medical/waitlist" element={<MedicalWaitlist />} />
+          <Route path="/medical/book-appointment" element={<BookAppointment />} />
+          <Route path="/medical/my-appointments" element={<MyAppointments />} />
+          <Route path="/medical/queue" element={<QueueDashboard />} />
+          <Route path="/admin/appointments" element={<AdminAppointments />} />
+          <Route path="/feedback" element={<FeedbackReport />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         {/* Chatbot Assistant - Available on all pages */}

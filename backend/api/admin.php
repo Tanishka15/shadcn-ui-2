@@ -55,13 +55,7 @@ try {
             echo json_encode($adminController->getUserActivityTimeline($userId, $limit));
             break;
 
-        case 'mood-analytics':
-            echo json_encode($adminController->getMoodAnalytics());
-            break;
 
-        case 'sos-analytics':
-            echo json_encode($adminController->getSOSAnalytics());
-            break;
 
         case 'dashboard-summary':
             echo json_encode($adminController->getDashboardSummary());
@@ -76,8 +70,6 @@ try {
                     'all-users',
                     'user-details?user_id=ID',
                     'user-activity?user_id=ID',
-                    'mood-analytics',
-                    'sos-analytics',
                     'dashboard-summary'
                 ]
             ]);

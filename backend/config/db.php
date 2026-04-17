@@ -3,14 +3,20 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Database credentials
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'safespace');
+// Make ALL mysqli errors throw exceptions so we see the real MySQL error message
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-// Create connection
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+// Database credentials
+define('DB_HOST', 'gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com');
+define('DB_USER', '3AvCbA3WLkLtD5q.root');
+define('DB_PASS', 'moUfvp7GGtBUERQy');
+define('DB_NAME', 'safespace');
+define('DB_PORT', 4000);
+
+// Create connection with SSL required for TiDB Serverless
+$conn = mysqli_init();
+$conn->ssl_set(NULL, NULL, NULL, NULL, NULL);
+$conn->real_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT, NULL, MYSQLI_CLIENT_SSL);
 
 // Check connection
 if ($conn->connect_error) {
