@@ -5,10 +5,10 @@
 
 // Allow any localhost origin for development
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-if (preg_match('/^http:\/\/localhost:\d+$/', $origin)) {
+if (preg_match('/^http:\/\/localhost:\d+$/', $origin) || strpos($origin, '.vercel.app') !== false) {
     header("Access-Control-Allow-Origin: $origin");
 } else {
-    header("Access-Control-Allow-Origin: http://localhost:5173"); // Fallback
+    header("Access-Control-Allow-Origin: *"); // Fallback
 }
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");

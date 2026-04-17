@@ -56,7 +56,7 @@ if (!isset($tokenData['aud'], $tokenData['sub'])) {
 }
 
 // Check audience matches backend env
-$clientId = getenv('GOOGLE_OAUTH_CLIENT_ID');
+$clientId = getenv('GOOGLE_OAUTH_CLIENT_ID') ?: '960395120025-p9hh0og4eljr9839d9el7e9auqbubrg0.apps.googleusercontent.com';
 if (!$clientId) {
     jsonResponse(500, [
         'success' => false,
