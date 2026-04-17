@@ -1,5 +1,7 @@
-// API Configuration
-const API_BASE_URL = 'http://localhost:8000/api';
+// Use the Render backend in production, and localhost in local development
+const API_BASE_URL = import.meta.env.PROD 
+  ? 'https://safespace-l6vj.onrender.com/api' 
+  : 'http://localhost:8000/api';
 
 // Store token in localStorage
 export const setAuthToken = (token: string) => {
